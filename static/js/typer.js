@@ -154,7 +154,7 @@ function UserLogin() {
 }
 
 function createUserInput() {
-    $('#console').append('<input type="text" class="console-input" id="userInput" autofocus="true">');
+    $('#console').append('<input type="text" class="console-input" id="userInput" autocomplete="off"/>');
     $('#userInput').focus();
     $('#userInput').keypress(function (e) {
         if (e.which == 13) {
@@ -190,7 +190,7 @@ async function start() {
 var breakline='';
 
 function createCommandField(){
-    $( '<div id="commandDiv"><span class="red">'+username+'@PaxPrz:</span>:<span class="blue">~</span>$ <input type="text" class="console-input" id="commandInput" autofocus="true"></div>' ).insertAfter('#console');
+    $( '<div id="commandDiv"><span class="red">'+username+'@PaxPrz:</span>:<span class="blue">~</span>$ <input type="text" class="console-input" id="commandInput" autocomplete="off" /></div>' ).insertAfter('#console');
     $('#commandInput').keypress(function (e) {
         if (e.which == 13) {
             command = $('#commandInput').val();

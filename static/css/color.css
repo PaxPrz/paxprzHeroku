@@ -47,6 +47,10 @@ input {
     }
   }
 
+  input:focus{
+      outline: none;
+  }
+
 .noBorders{
     border: 0px;
     margin-bottom: 0px;
