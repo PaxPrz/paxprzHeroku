@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify, flash, redirect
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import smtplib
 import os
@@ -32,6 +32,7 @@ app = Flask(__name__, template_folder=templates)
 app.config['SECRET_KEY']='mynameisprakashprajapati'
 
 USERS={}
+CV_DOWN_REQ={}
 WHOISPAX={
     "Name":"Prakash Prajapati",
     "Gender":"Male",
@@ -110,7 +111,8 @@ cv_filename = 'paxcv.pdf'
 
 def sendCVEmail(name, email):
     global gmail_email, gmail_pass, cv_filename
-    text = '''Hello {0}. I have attached my CV hereby. If you consider me good for any position please contact me or email me.'''
+    text = '''Hello {0}. I have attached my CV hereby. If you consider me good for any position please contact me or email me.
+    Sent by AutoBot. From Website: http://paxprz.herokuapp.com'''
     msg = MIMEMultipart()
     msg['From'] = gmail_email
     msg['To'] = gmail_pass
@@ -388,8 +390,8 @@ def stackoverflowCmd(user, args):
     <script>document.getElementById('stackoverflow').click()</script>'''
     return output
 
-def getcvCmd(user, args):
-    global USERS
+def getcvCmd(user, args, ip='127.0.0.1'):
+    global USERS, CV_DOWN_REQ
     if user not in USERS.keys():
         createUser(user)
     if not args:
@@ -413,6 +415,15 @@ def getcvCmd(user, args):
         USERS[user]['email'].append(email)
         if 'yopmail' in email.lower():
             return '<span class="error">Temporary Email Not supported</span>'
+        if ip not in CV_DOWN_REQ.keys():
+            CV_DOWN_REQ[ip]=[]
+        count = 0
+        for j in CV_DOWN_REQ[ip]:
+            if datetime.now()-j < timedelta(seconds=3600):
+                count +=1
+        if count >= 2:
+            return '<span class="error">Time Limit Exceed</span> Try after 1 hr interval.'
+        CV_DOWN_REQ[ip].append(datetime.now())
         return sendCVEmail(name, email)
     else:
         return '<span class="error">Invalid Email Address</span>'
@@ -528,7 +539,11 @@ def command():
         cmd = cmds[0]
         args = cmds[1:]
         try:
-            output = OPERATIONS[cmd]['fn'](user, args)
+            if cmd=='getcv':
+                ip = str(request.remote_addr)
+                output = getcvCmd(user, args, ip)
+            else:
+                output = OPERATIONS[cmd]['fn'](user, args)
             return jsonify({"msg": output})
         except KeyError:
             return jsonify({"msg": '<span id="error">'+cmd+'</span> : Command Not found'})
