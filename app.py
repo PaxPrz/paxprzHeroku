@@ -2,10 +2,18 @@ from flask import Flask, request, render_template, jsonify, flash, redirect
 import json
 from datetime import datetime
 import time
+import smtplib
+import os
+from os.path import basename
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import COMMASPACE, formatdate
+import re
 
 templates="templates"
 
-welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
+welcomeMsg2 = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
 Hello {0}, Welcome to my virtual system <span class="success">PraKsha</span> v1.0.
 
 This system was designed so you could know me well. It's like a personal site. Let me introduce myself I am Prakash Prajapati. I am a security researcher cum programmer. 
@@ -13,7 +21,7 @@ This system was designed so you could know me well. It's like a personal site. L
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
 
-welcomeMsg2='''
+welcomeMsg='''
 hello welcome
 '''
 
@@ -96,10 +104,42 @@ PROGRAMMING={
     'PHP':'&#9733;&nbsp;&#9734;&nbsp;&#9734;&nbsp;&#9734;&nbsp;&#9734;&nbsp;'
 }
 
+gmail_email = os.environ['GMAIL_EMAIL']
+gmail_pass = os.environ['GMAIL_PASS']
+cv_filename = 'paxcv.pdf'
+
+def sendCVEmail(name, email):
+    global gmail_email, gmail_pass, cv_filename
+    text = '''Hello {0}. I have attached my CV hereby. If you consider me good for any position please contact me or email me.'''
+    msg = MIMEMultipart()
+    msg['From'] = gmail_email
+    msg['To'] = gmail_pass
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = "PaxPrz CV"
+    msg.attach(MIMEText(text.format(name)))
+    try:
+        with open(cv_filename, 'rb') as f:
+            part = MIMEApplication(f.read(), Name=basename(cv_filename))
+        part['Content-Disposition'] = 'attachment; filename="%s"' % basename(cv_filename)
+        msg.attach(part)
+    except Exception as e:
+        writeError(e)
+        return '<span class="error">CV file not found. Try later</span>'
+    try:
+        smtp = smtplib.SMTP('smtp.gmail.com:587')
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(gmail_email, gmail_pass)
+        smtp.sendmail(gmail_email, email, msg.as_string())
+        smtp.quit()
+    except Exception as e:
+        writeError(e)
+        return '<span class="error">SMTP server error. Please Try later</span>'
+    return '<span class="success">Success</span>: Please check your email'
 
 def createUser(username):
     global USERS
-    USERS[username]={'access':[], 'job':[], 'name':[], 'contact':[], 'github':False, 'linkedin':False, 'stackoverflow':False}
+    USERS[username]={'access':[], 'job':[], 'email':[], 'name':[], 'contact':[], 'github':False, 'linkedin':False, 'stackoverflow':False}
 
 def helpCmd(user, args):
     global OPERATIONS
@@ -323,15 +363,11 @@ def looksCmd(user, args):
 
 def githubCmd(user, args):
     global USERS
-    print('--1')
     if user not in USERS.keys():
-        print('--2')
         createUser(user)
     USERS[user]['github']=True
-    print('--3')
     output = '''Redirecting to <a href="https://github.com/paxprz/" target="_blank" id="github">github</a> ...
     <script>document.getElementById('github').click()</script>'''
-    print('--4')
     return output
 
 def linkedinCmd(user, args):
@@ -351,6 +387,35 @@ def stackoverflowCmd(user, args):
     output = '''Redirecting to <a href="https://stackoverflow.com/users/5611227/pax" target="_blank" id="stackoverflow">StackOverFlow</a> ...
     <script>document.getElementById('stackoverflow').click()</script>'''
     return output
+
+def getcvCmd(user, args):
+    global USERS
+    if user not in USERS.keys():
+        createUser(user)
+    if not args:
+        return '''<span>CV will be sent through email<br>
+        Usage: getcv <i>email@address</i> ["<i>Full Name</i>"] [<i>ContactNo.</i>]'''
+    email = args[0]
+    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    if(re.search(regex,email)):
+        if str.isdecimal(args[-1]):
+            contact = args[-1]
+            name = ' '.join(args[1:-1]).strip(' ').strip('"').strip(' ')
+        else:
+            contact = ''
+            name = ' '.join(args[1:]).strip(' ').strip('"').strip(' ')
+        if name=='':
+            name = 'Sir/Madam'
+        else:
+            USERS[user]['name'].append(name)
+        if contact!='':
+            USERS[user]['contact'].append(contact)
+        USERS[user]['email'].append(email)
+        if 'yopmail' in email.lower():
+            return '<span class="error">Temporary Email Not supported</span>'
+        return sendCVEmail(name, email)
+    else:
+        return '<span class="error">Invalid Email Address</span>'
 
 OPERATIONS={
     'help':{
@@ -416,9 +481,17 @@ OPERATIONS={
         'arguments':0,
         'description':'Opens my stackoverflow profile',
         'fn':stackoverflowCmd
+    },
+    'getcv':{
+        'usage':'getcv',
+        'arguments':0,
+        'description':'Request for my CV',
+        'fn':getcvCmd
     }
 }
 
+def InputSanitizor(data):
+    return data.replace('<','&lt;').replace('>','&gt;')
 
 @app.route('/')
 def home():
@@ -431,12 +504,12 @@ def user():
         data = json.loads(request.get_data().decode())
         print("Data : ", data, type(data))
         print("headers: ", str(request.headers.get('user_agent','UA')), str(request.remote_addr))
-        username = data.get('username','Anonymous')
+        username = InputSanitizor(data.get('username','Anonymous'))
         if username=='':
             username = 'Anonymous'
         if username not in USERS.keys():
             createUser(username)
-        USERS[username]['access'].append(str(datetime.now()))
+        USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), str(request.remote_addr)))
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
         writeError(e)
@@ -447,8 +520,8 @@ def command():
     try:
         data = json.loads(request.get_data().decode())
         print("Data : ", data)
-        user = data.get('username','Anonymous')
-        command = data.get('command','')
+        user = InputSanitizor(data.get('username','Anonymous'))
+        command = InputSanitizor(data.get('command',''))
         if command=='':
             return jsonify({"msg": "<span id=\"error\"> Empty Command</span>"})
         cmds = command.strip().split(' ')
@@ -462,6 +535,31 @@ def command():
         return jsonify({"msg": '<span id="error"'+cmd+'</span> : Error Processing command'})
     except Exception as e:
         writeError(e)
+
+MASTER_USERNAME=os.environ.get('MASTER_USERNAME','admin')
+MASTER_PASSWORD=os.environ.get('MASTER_PASSWORD','password')
+
+@app.route('/users', methods=['GET','POST'])
+def getUsers():
+    global USERS
+    if request.method == 'GET':
+        return render_template('login.html')
+    else:
+        username = request.form.get('username','')
+        password = request.form.get('password','')
+        if username==MASTER_USERNAME and password==MASTER_PASSWORD:
+            return jsonify(USERS)
+        return render_template('login.html')
+
+@app.route('/save', methods=['GET'])
+def saveUsers():
+    global USERS
+    with open('users.json','w') as f:
+        json.dump(USERS, f, indent=4)
+    return "<h1>Save Complete</h1>"
       
 if __name__=="__main__":
+    if os.path.isfile('users.json'):
+        with open('users.json','r') as f:
+            USERS = json.load(f)
     app.run()

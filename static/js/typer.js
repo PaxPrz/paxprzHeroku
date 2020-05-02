@@ -6,7 +6,7 @@ var init_script = `
 [ <span class="success">OK</span> ] Starting Terminal. <!--asdfljskdfjlsasdfasdfasdf-->
 `;
 
-// var init_script = 'hello';
+var init_script = 'hello';
 
 var LoginScript = `
 PaxPrz System tty <!--thisisjusttoextendsystemtimeandnothingelse-->
@@ -160,7 +160,7 @@ function createUserInput() {
     $('#userInput').focus();
     $('#userInput').keypress(function (e) {
         if (e.which == 13) {
-            username = $('#userInput').val();
+            username = InputSanitizor($('#userInput').val());
             console.log(username + " submit");
             $('#userInput').prop('readonly', true);
             $.post('/user', JSON.stringify({"username":username}), runHome);
@@ -187,6 +187,17 @@ async function start() {
     await BootUp();
     await UserLogin();
     createUserInput();
+    $(document).keypress(function(e){
+        if(e.key === "Escape"){
+            $('commandInput').val('');
+            document.getElementById('commandDiv').hidden = false;
+            $('commandInput').focus();
+        }
+    })
+}
+
+function InputSanitizor(data){
+    return data.replace(/</gi, '&lt;').replace(/>/gi, '&gt;');
 }
 
 var breakline='';
@@ -195,7 +206,7 @@ function createCommandField(){
     $( '<div id="commandDiv"><span class="red">'+username+'@PaxPrz:</span>:<span class="blue">~</span>$ <input type="text" class="console-input" id="commandInput" autocomplete="off" /></div>' ).insertAfter('#console');
     $('#commandInput').keypress(function (e) {
         if (e.which == 13) {
-            command = $('#commandInput').val();
+            command = InputSanitizor($('#commandInput').val());
             console.log("command: ",command);
 
             var line = $('#console').html();
@@ -210,7 +221,7 @@ function createCommandField(){
             // $('#commandDiv').prop('hidden','true');
             document.getElementById('commandDiv').hidden = true;
             breakline='<br>';
-            
+            command = $.trim(command)
             if(command=='clear'){
                 $('#console').empty();
                 $('#commandInput').val('');
@@ -219,7 +230,7 @@ function createCommandField(){
                 breakline='';
                 return;
             }
-            if($.trim(command)==''){
+            if(command==''){
                 document.getElementById('commandDiv').hidden = false;
                 $('#commandInput').focus();
                 breakline='';
@@ -259,67 +270,3 @@ async function addOutput(data, status){
 }
 
 start();
-
-
-// function t(timer, resolve, reject) {
-//     Typer.addText({ keyCode: 123748 });
-
-//     if (Typer.index > Typer.text.length) {
-//         clearInterval(timer);
-//         resolve('ok');
-//     }
-// }
-
-// Typer.speed = 3;
-// Typer.init(init_script);
-
-// let promise = new Promise(function (resolve, reject) {
-
-//     var timer = setInterval(() => {
-//         Typer.addText({ keyCode: 123748 });
-
-//         if (Typer.index > Typer.text.length) {
-//             clearInterval(timer);
-//             resolve('ok');
-//         }
-//     }, 30);
-
-
-// });
-
-// promise.then(ok => {
-//     $('#console').empty();
-//     console.log('ok1');
-// }).then(ok => {
-//     Typer.init(LoginScript);
-//     new Promise((resolve, reject) => {
-//         var timer = setInterval(() => {
-//             Typer.addText({ keyCode: 123748 });
-
-//             if (Typer.index > Typer.text.length) {
-//                 clearInterval(timer);
-//                 resolve('ok');
-//             }
-//         }, 30);
-//     }).then(ok => {
-//         console.log('ok2');
-//         $('#console').append('<input type="text" class="console-input" id="userInput" autofocus="true">');
-//         $('#userInput').focus();
-//         $('#userInput').keypress(function (e) {
-//             if (e.which == 13) {
-//                 username = $('#userInput').val();
-//                 console.log(username + " submit");
-//                 $('#userInput').prop('readonly', true);
-//                 $.ajax({
-//                     type: "POST",
-//                     url: '/user',
-//                     data: { "username": username },
-//                     success: runHome
-//                 })
-//             }
-//         })
-//     })
-// }).catch(err => {
-//     console.log("Error");
-// });
-
