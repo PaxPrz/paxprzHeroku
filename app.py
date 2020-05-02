@@ -520,7 +520,7 @@ def user():
             username = 'Anonymous'
         if username not in USERS.keys():
             createUser(username)
-        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
         USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), ip))
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
