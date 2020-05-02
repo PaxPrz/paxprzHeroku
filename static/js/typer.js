@@ -6,7 +6,7 @@ var init_script = `
 [ <span class="success">OK</span> ] Starting Terminal. <!--asdfljskdfjlsasdfasdfasdf-->
 `;
 
-var init_script = 'hello';
+// var init_script = 'hello';
 
 var LoginScript = `
 PaxPrz System tty <!--thisisjusttoextendsystemtimeandnothingelse-->

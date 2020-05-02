@@ -13,7 +13,7 @@ import re
 
 templates="templates"
 
-welcomeMsg2 = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
+welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
 Hello {0}, Welcome to my virtual system <span class="success">PraKsha</span> v1.0.
 
 This system was designed so you could know me well. It's like a personal site. Let me introduce myself I am Prakash Prajapati. I am a security researcher cum programmer. 
@@ -21,7 +21,7 @@ This system was designed so you could know me well. It's like a personal site. L
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
 
-welcomeMsg='''
+welcomeMsg2='''
 hello welcome
 '''
 
