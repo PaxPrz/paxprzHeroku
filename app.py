@@ -520,7 +520,10 @@ def user():
             username = 'Anonymous'
         if username not in USERS.keys():
             createUser(username)
-        ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
+        try:
+            ip = request.headers['X-Forwarded-For']
+        except:
+            ip = request.environ.get('REMOTE_ADDR', '127.0.0.1')
         USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), ip))
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
@@ -541,7 +544,10 @@ def command():
         args = cmds[1:]
         try:
             if cmd=='getcv':
-                ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
+                try:
+                    ip = request.headers['X-Forwarded-For']
+                except:
+                    ip = request.environ.get('REMOTE_ADDR', '127.0.0.1')
                 output = getcvCmd(user, args, ip)
             else:
                 output = OPERATIONS[cmd]['fn'](user, args)
