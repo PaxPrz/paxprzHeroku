@@ -514,13 +514,14 @@ def user():
     try:
         data = json.loads(request.get_data().decode())
         print("Data : ", data, type(data))
-        print("headers: ", str(request.headers.get('user_agent','UA')), str(request.remote_addr))
+        print("headers: ", str(request.headers.get('user_agent','UA')), str(request.remote_addr), 'environ:', str(request.environ.get('HTTP_X_REAL_IP', 'norealIP')))
         username = InputSanitizor(data.get('username','Anonymous'))
         if username=='':
             username = 'Anonymous'
         if username not in USERS.keys():
             createUser(username)
-        USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), str(request.remote_addr)))
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), ip))
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
         writeError(e)
@@ -540,7 +541,7 @@ def command():
         args = cmds[1:]
         try:
             if cmd=='getcv':
-                ip = str(request.remote_addr)
+                ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
                 output = getcvCmd(user, args, ip)
             else:
                 output = OPERATIONS[cmd]['fn'](user, args)
