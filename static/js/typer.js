@@ -6,6 +6,8 @@ var init_script = `
 [ <span class="success">OK</span> ] Starting Terminal. <!--asdfljskdfjlsasdfasdfasdf-->
 `;
 
+// var init_script = 'hello';
+
 var LoginScript = `
 PaxPrz System tty <!--thisisjusttoextendsystemtimeandnothingelse-->
 Enter Username : `;
@@ -200,6 +202,9 @@ function createCommandField(){
             if (line.substring(line.length-15, line.length).includes('table')){
                 breakline='';
             }
+            if (line.substring(line.length-10, line.length).includes('<br>')){
+                breakline='';
+            }
             $('#console').append(breakline+'<span class="red">'+username+'@PaxPrz:</span>:<span class="blue">~</span>$ '+command+'<br>');
             // $('#userInput').prop('readonly', true);
             // $('#commandDiv').prop('hidden','true');
@@ -211,6 +216,7 @@ function createCommandField(){
                 $('#commandInput').val('');
                 document.getElementById('commandDiv').hidden = false;
                 $('#commandInput').focus();
+                breakline='';
                 return;
             }
             if($.trim(command)==''){

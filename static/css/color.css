@@ -65,3 +65,36 @@ input {
     padding-left: 5px;
     padding-right: 5px;
 }
+
+a{
+    text-decoration: none;
+    color: #0af;
+}
+
+a:hover{
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.small-text{
+    font-size: 6px;
+    color:white;
+}
+
+.small-text p{
+    margin:0px;
+    margin-top: 0rem;
+    margin-bottom: 0rem;
+}
+
+/* .small-text br{
+    display:block;
+    margin: -10px 0px;
+    content: " ";
+} */
+
+/* @include chrome-styles {
+    .small-text br{
+        margin: -20px 0px;
+    }
+} */
