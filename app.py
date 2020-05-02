@@ -541,7 +541,7 @@ def command():
         args = cmds[1:]
         try:
             if cmd=='getcv':
-                ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+                ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
                 output = getcvCmd(user, args, ip)
             else:
                 output = OPERATIONS[cmd]['fn'](user, args)
