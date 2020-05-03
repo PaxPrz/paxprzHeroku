@@ -62,8 +62,7 @@ input {
 }
 
 .noBorders td{
-    padding-left: 5px;
-    padding-right: 5px;
+    padding: 2px 5px;
 }
 
 a{
