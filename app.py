@@ -108,6 +108,7 @@ PROGRAMMING={
 gmail_email = os.environ['GMAIL_EMAIL']
 gmail_pass = os.environ['GMAIL_PASS']
 cv_filename = 'paxcv.pdf'
+SAVE_ENABLED = False
 
 def sendCVEmail(name, email):
     global gmail_email, gmail_pass, cv_filename
@@ -368,7 +369,8 @@ def githubCmd(user, args):
     if user not in USERS.keys():
         createUser(user)
     USERS[user]['github']=True
-    saveUsers()
+    if SAVE_ENABLED:
+        saveUsers()
     output = '''Redirecting to <a href="https://github.com/paxprz/" target="_blank" id="github">github</a> ...
     <script>document.getElementById('github').click()</script>'''
     return output
@@ -378,7 +380,8 @@ def linkedinCmd(user, args):
     if user not in USERS.keys():
         createUser(user)
     USERS[user]['linkedin']=True
-    saveUsers()
+    if SAVE_ENABLED:
+        saveUsers()
     output = '''Redirecting to <a href="https://www.linkedin.com/in/paxprz" target="_blank" id="linkedin">LinkedIn</a> ...
     <script>document.getElementById('linkedin').click()</script>'''
     return output
@@ -388,7 +391,8 @@ def stackoverflowCmd(user, args):
     if user not in USERS.keys():
         createUser(user)
     USERS[user]['stackoverflow']=True
-    saveUsers()
+    if SAVE_ENABLED:
+        saveUsers()
     output = '''Redirecting to <a href="https://stackoverflow.com/users/5611227/pax" target="_blank" id="stackoverflow">StackOverFlow</a> ...
     <script>document.getElementById('stackoverflow').click()</script>'''
     return output
@@ -416,7 +420,8 @@ def getcvCmd(user, args, ip='127.0.0.1'):
         if contact!='':
             USERS[user]['contact'].append(contact)
         USERS[user]['email'].append(email)
-        saveUsers()
+        if SAVE_ENABLED:
+            saveUsers()
         if 'yopmail' in email.lower():
             return '<span class="error">Temporary Email Not supported</span>'
         if ip not in CV_DOWN_REQ.keys():
@@ -529,7 +534,8 @@ def user():
         except:
             ip = request.environ.get('REMOTE_ADDR', '127.0.0.1')
         USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), ip))
-        saveUsers()
+        if SAVE_ENABLED:
+            saveUsers()
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
         writeError(e)
@@ -568,14 +574,17 @@ MASTER_PASSWORD=os.environ.get('MASTER_PASSWORD','password')
 
 @app.route('/users', methods=['GET','POST'])
 def getUsers():
-    global USERS
+    global MASTER_PASSWORD, MASTER_USERNAME, USERS
+    saveUsers()
     if request.method == 'GET':
         return render_template('login.html')
     else:
         username = request.form.get('username','')
         password = request.form.get('password','')
         if username==MASTER_USERNAME and password==MASTER_PASSWORD:
-            return jsonify(USERS)
+            with open('users.json','r') as f:
+                data = json.load(f)
+            return data
         return render_template('login.html')
 
 @app.route('/save', methods=['GET'])
