@@ -10,6 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 import re
+from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
 
 templates="templates"
 
@@ -25,14 +26,15 @@ welcomeMsg2='''
 hello welcome
 '''
 
-def writeError(e):
-    print(e)
+# def writeError(e):
+#     print(e)
 
 app = Flask(__name__, template_folder=templates)
-app.config['SECRET_KEY']='mynameisprakashprajapati'
+app.config['SECRET_KEY']=os.environ.get('SECRET_KEY','mynameisprakashprajapati')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
 
-USERS={}
-CV_DOWN_REQ={}
+db.init_app(app)
+
 WHOISPAX={
     "Name":"Prakash Prajapati",
     "Gender":"Male",
@@ -108,7 +110,6 @@ PROGRAMMING={
 gmail_email = os.environ['GMAIL_EMAIL']
 gmail_pass = os.environ['GMAIL_PASS']
 cv_filename = 'paxcv.pdf'
-SAVE_ENABLED = False
 
 def sendCVEmail(name, email):
     global gmail_email, gmail_pass, cv_filename
@@ -140,9 +141,55 @@ def sendCVEmail(name, email):
         return '<span class="error">SMTP server error. Please Try later</span>'
     return '<span class="success">Success</span>: Please check your email'
 
-def createUser(username):
-    global USERS
-    USERS[username]={'access':[], 'job':[], 'email':[], 'name':[], 'contact':[], 'github':False, 'linkedin':False, 'stackoverflow':False}
+def createLogin(username, ip, agent):
+    global Login
+    timestamp = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    try:
+        login = Login(username, ip, agent, timestamp)
+        db.session.add(login)
+        db.session.commit()
+    except Exception as e:
+        writeError(e)
+
+def createGithub(username):
+    global GitHub
+    timestamp = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    try:
+        github = GitHub(username, timestamp)
+        db.session.add(github)
+        db.session.commit()
+    except Exception as e:
+        writeError(e)
+
+def createStackOverFlow(username):
+    global StackOverFlow
+    timestamp = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    try:
+        stackoverflow = StackOverFlow(username, timestamp)
+        db.session.add(stackoverflow)
+        db.session.commit()
+    except Exception as e:
+        writeError(e)
+
+def createLinkedIn(username):
+    global LinkedIn
+    timestamp = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    try:
+        linkedin = LinkedIn(username, timestamp)
+        db.session.add(linkedin)
+        db.session.commit()
+    except Exception as e:
+        writeError(e)
+
+def createGetCV(username, email, name, contact, ip):
+    global CV
+    timestamp = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    try:
+        cv = CV(username, email, name, contact, ip, timestamp)
+        db.session.add(cv)
+        db.session.commit()
+    except Exception as e:
+        writeError(e)
 
 def helpCmd(user, args):
     global OPERATIONS
@@ -365,44 +412,29 @@ def looksCmd(user, args):
     return output
 
 def githubCmd(user, args):
-    global USERS
-    if user not in USERS.keys():
-        createUser(user)
-    USERS[user]['github']=True
-    if SAVE_ENABLED:
-        saveUsers()
+    createGithub(user)
     output = '''Redirecting to <a href="https://github.com/paxprz/" target="_blank" id="github">github</a> ...
     <script>document.getElementById('github').click()</script>'''
     return output
 
 def linkedinCmd(user, args):
-    global USERS
-    if user not in USERS.keys():
-        createUser(user)
-    USERS[user]['linkedin']=True
-    if SAVE_ENABLED:
-        saveUsers()
+    createLinkedIn(user)
     output = '''Redirecting to <a href="https://www.linkedin.com/in/paxprz" target="_blank" id="linkedin">LinkedIn</a> ...
     <script>document.getElementById('linkedin').click()</script>'''
     return output
 
 def stackoverflowCmd(user, args):
-    global USERS
-    if user not in USERS.keys():
-        createUser(user)
-    USERS[user]['stackoverflow']=True
-    if SAVE_ENABLED:
-        saveUsers()
+    createStackOverFlow(user)
     output = '''Redirecting to <a href="https://stackoverflow.com/users/5611227/pax" target="_blank" id="stackoverflow">StackOverFlow</a> ...
     <script>document.getElementById('stackoverflow').click()</script>'''
     return output
 
 def getcvCmd(user, args, ip='127.0.0.1'):
-    global USERS, CV_DOWN_REQ
-    if user not in USERS.keys():
-        createUser(user)
+    global CV
+    if os.environ.get('ALLOW_CV','ALLOW')=='DENY':
+        return '''<span>Sending CV is temporarily disabled</span><br>'''
     if not args:
-        return '''<span>CV will be sent through email<br>
+        return '''<span>CV will be sent through email</span><br>
         Usage: getcv <i>email@address</i> ["<i>Full Name</i>"] [<i>ContactNo.</i>]'''
     email = args[0]
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
@@ -415,25 +447,29 @@ def getcvCmd(user, args, ip='127.0.0.1'):
             name = ' '.join(args[1:]).strip(' ').strip('"').strip(' ')
         if name=='':
             name = 'Sir/Madam'
-        else:
-            USERS[user]['name'].append(name)
-        if contact!='':
-            USERS[user]['contact'].append(contact)
-        USERS[user]['email'].append(email)
-        if SAVE_ENABLED:
-            saveUsers()
         if 'yopmail' in email.lower():
             return '<span class="error">Temporary Email Not supported</span>'
-        if ip not in CV_DOWN_REQ.keys():
-            CV_DOWN_REQ[ip]=[]
         count = 0
-        for j in CV_DOWN_REQ[ip]:
-            if datetime.now()-j < timedelta(seconds=3600):
+        try:
+            CV_REQ_FROM_IP = CV.query.filter_by(ip=ip).all()
+        except Exception as e:
+            CV_REQ_FROM_IP=[]
+            writeError(e)
+        # print('CV_REQ')
+        # print(str(CV_REQ_FROM_IP)) # [<CV 1>]
+        # print(type(CV_REQ_FROM_IP[0])) # <class 'model.CV'>
+        # print(CV_REQ_FROM_IP[0]) # <CV 1>
+        # print(CV_REQ_FROM_IP[0].ip) # 127.0.0.1
+        for j in CV_REQ_FROM_IP:
+            x = datetime.utcnow()+timedelta(hours=5, minutes=45)
+            y = j.timeStamp
+            if x-y < timedelta(seconds=3600):
                 count +=1
-        if count >= 2:
-            return '<span class="error">Time Limit Exceed</span> Try after 1 hr interval.'
-        CV_DOWN_REQ[ip].append(datetime.now())
+        if count >= int(os.environ.get('MAX_CV',2)):
+            return '<span class="error">CV Sending Exceed. </span><b>For Spam Protection.</b> Try later'
+        createGetCV(user, email, name, contact, ip)
         return sendCVEmail(name, email)
+        # return 'Test Success'
     else:
         return '<span class="error">Invalid Email Address</span>'
 
@@ -513,13 +549,17 @@ OPERATIONS={
 def InputSanitizor(data):
     return data.replace('<','&lt;').replace('>','&gt;')
 
+def writeError(data):
+    time_now = datetime.utcnow()+timedelta(hours=5, minutes=45)
+    with open('error.log', 'a') as f:
+        f.write(str(time_now)+str(data)+'\n')
+
 @app.route('/')
 def home():
     return render_template("index.html")
 
 @app.route('/user', methods=['POST'])
 def user():
-    global USERS
     try:
         data = json.loads(request.get_data().decode())
         print("Data : ", data, type(data))
@@ -527,15 +567,12 @@ def user():
         username = InputSanitizor(data.get('username','Anonymous'))
         if username=='':
             username = 'Anonymous'
-        if username not in USERS.keys():
-            createUser(username)
         try:
             ip = request.headers['X-Forwarded-For']
         except:
             ip = request.environ.get('REMOTE_ADDR', '127.0.0.1')
-        USERS[username]['access'].append((str(datetime.now()),str(request.headers.get('user_agent','UA')), ip))
-        if SAVE_ENABLED:
-            saveUsers()
+        agent = str(request.headers.get('user_agent','UA'))
+        createLogin(username, ip, agent)
         return jsonify({"msg": welcomeMsg.format(username)})
     except Exception as e:
         writeError(e)
@@ -574,28 +611,35 @@ MASTER_PASSWORD=os.environ.get('MASTER_PASSWORD','password')
 
 @app.route('/users', methods=['GET','POST'])
 def getUsers():
-    global MASTER_PASSWORD, MASTER_USERNAME, USERS
-    saveUsers()
+    global MASTER_PASSWORD, MASTER_USERNAME, Login, GitHub, StackOverFlow, LinkedIn, CV
+    MASTER_USERNAME=os.environ.get('MASTER_USERNAME','admin')
+    MASTER_PASSWORD=os.environ.get('MASTER_PASSWORD','password')
     if request.method == 'GET':
         return render_template('login.html')
     else:
         username = request.form.get('username','')
         password = request.form.get('password','')
         if username==MASTER_USERNAME and password==MASTER_PASSWORD:
-            with open('users.json','r') as f:
-                data = json.load(f)
-            return data
+            return render_template('log.html', login=Login.query.all(), github=GitHub.query.all(), stackoverflow=StackOverFlow.query.all(), linkedin=LinkedIn.query.all(), cv=CV.query.all())
         return render_template('login.html')
 
-@app.route('/save', methods=['GET'])
-def saveUsers():
-    global USERS
-    with open('users.json','w') as f:
-        json.dump(USERS, f, indent=4)
-    return "<h1>Save Complete</h1>"
+@app.route('/error', methods=['GET'])
+def getError():
+    with open('error.log','r') as f:
+        err = f.readlines()
+    return '<br>'.join(err)
+
+# @app.route('/save', methods=['GET'])
+# def saveUsers():
+#     global USERS
+#     with open('users.json','w') as f:
+#         json.dump(USERS, f, indent=4)
+#     return "<h1>Save Complete</h1>"
       
+#Database create all tables
+
+
 if __name__=="__main__":
-    if os.path.isfile('users.json'):
-        with open('users.json','r') as f:
-            USERS = json.load(f)
+    with app.app_context():
+        db.create_all()
     app.run()

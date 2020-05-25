@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Users Log</title>
+</head>
+<body>
+    <style>
+    table{
+        border: solid 2px black;
+    }
+    thead tr td{
+        border-bottom: solid 1px black;
+    }
+    td{
+        border-left: solid 1px gray;
+    }
+    td :first-child{
+        border-left:none;
+    }
+    </style>
+    <h3>Login</h3>
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <td>S.N</td>
+                <td>Username</td>
+                <td>TimeStamp</td>
+                <td>IP</td>
+                <td>Agent</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in login %}
+                <tr>
+                    <td>{{ l.id }}</td>
+                    <td>{{ l.username }}</td>
+                    <td>{{ l.timeStamp }}</td>
+                    <td>{{ l.ip }}</td>
+                    <td>{{ l.agent }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>CV</h3>
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <td>S.N</td>
+                <td>Username</td>
+                <td>Email</td>
+                <td>IP</td>
+                <td>Name</td>
+                <td>Contact</td>
+                <td>TimeStamp</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in cv %}
+                <tr>
+                    <td>{{ l.id }}</td>
+                    <td>{{ l.username }}</td>
+                    <td>{{ l.email }}</td>
+                    <td>{{ l.ip }}</td>
+                    <td>{{ l.name }}</td>
+                    <td>{{ l.contact }}</td>
+                    <td>{{ l.timeStamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>GitHub</h3>
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <td>S.N</td>
+                <td>Username</td>
+                <td>TimeStamp</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in github %}
+                <tr>
+                    <td>{{ l.id }}</td>
+                    <td>{{ l.username }}</td>
+                    <td>{{ l.timeStamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>StackOverFlow</h3>
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <td>S.N</td>
+                <td>Username</td>
+                <td>TimeStamp</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in stackoverflow %}
+                <tr>
+                    <td>{{ l.id }}</td>
+                    <td>{{ l.username }}</td>
+                    <td>{{ l.timeStamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>LinkedIn</h3>
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <td>S.N</td>
+                <td>Username</td>
+                <td>TimeStamp</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in linkedin %}
+                <tr>
+                    <td>{{ l.id }}</td>
+                    <td>{{ l.username }}</td>
+                    <td>{{ l.timeStamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
