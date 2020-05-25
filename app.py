@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 import re
 from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
+from sqlalchemy import create_engine
 
 templates="templates"
 
@@ -32,6 +33,7 @@ hello welcome
 app = Flask(__name__, template_folder=templates)
 app.config['SECRET_KEY']=os.environ.get('SECRET_KEY','mynameisprakashprajapati')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 
 db.init_app(app)
 
@@ -638,9 +640,10 @@ def getError():
       
 #Database create all tables
 
-
-with app.app_context():
-    db.create_all()
+engine = create_engine(os.environ.get('DATABASE_URL'))
+if not engine.dialect.has_table(engine, "login"):
+    with app.app_context():
+        db.create_all()
 
 if __name__=="__main__":
     app.run()
