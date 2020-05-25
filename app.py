@@ -17,7 +17,7 @@ templates="templates"
 welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
 Hello {0}, Welcome to my virtual system <span class="success">PraKsha</span> v1.0.
 
-This system was designed so you could know me well. It's like a personal site. Let me introduce myself I am Prakash Prajapati. I am a security researcher cum programmer. 
+This system was designed so you could know me well. It's like a portfolio. Let me introduce myself; I am Prakash Prajapati. I am a security researcher cum programmer. 
 
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
@@ -31,7 +31,7 @@ hello welcome
 
 app = Flask(__name__, template_folder=templates)
 app.config['SECRET_KEY']=os.environ.get('SECRET_KEY','mynameisprakashprajapati')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
 db.init_app(app)
 
@@ -248,7 +248,7 @@ def projectsCmd(user, args):
         '''
         for key in PROJECTS.keys():
             output+='''     <tr>
-            <td>'''+key+'''</td>
+            <td><b>'''+key+'''</b></td>
             <td>'''+PROJECTS[key]['quick']+'''</td>
             </tr>'''
         output+='''</tbody>
@@ -265,7 +265,7 @@ def projectsCmd(user, args):
                 output+='''<table class=noBorders>
                 <thead>
                     <tr>
-                        <td colspan='2'>'''+p+'''</td>
+                        <td colspan='2'><b>'''+p+'''</b></td>
                     </tr>
                 </thead>
                 <tbody>
