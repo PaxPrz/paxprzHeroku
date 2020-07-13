@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, flash, redirect
+from flask import Flask, request, render_template, jsonify, flash, redirect, send_file
 import json
 from datetime import datetime, timedelta
 import time
@@ -630,6 +630,10 @@ def getError():
     with open('error.log','r') as f:
         err = f.readlines()
     return '<br>'.join(err)
+
+@app.route('/.well-known/acme-challenge/Dq9fbrYvhYFW2rv4ocjIBnS3F5gSUFIy2mmszlyMOtQ')
+def certbotchallenge():
+    return send_file('./certbot-challenge.txt')
 
 # @app.route('/save', methods=['GET'])
 # def saveUsers():
