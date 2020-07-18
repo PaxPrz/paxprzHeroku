@@ -23,9 +23,9 @@ This system was designed so you could know me well. It's like a portfolio. Let m
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
 
-welcomeMsg2='''
-hello welcome
-'''
+# welcomeMsg='''
+# hello welcome
+# '''
 
 # def writeError(e):
 #     print(e)
@@ -475,6 +475,11 @@ def getcvCmd(user, args, ip='127.0.0.1'):
     else:
         return '<span class="error">Invalid Email Address</span>'
 
+def contactCmd(user, args):
+    output = '''Email me at paxprajapati@gmail.com!<br>
+    Or Add me in Linkedin!!'''
+    return output
+
 OPERATIONS={
     'help':{
         'usage':'help',
@@ -545,6 +550,17 @@ OPERATIONS={
         'arguments':0,
         'description':'Request for my CV',
         'fn':getcvCmd
+    },
+    'contact':{
+        'usage':'contact',
+        'arguments':0,
+        'description':'Where to keep in touch',
+        'fn':contactCmd
+    },
+    'matrix':{
+        'usage':'matrix',
+        'arguments':0,
+        'description':'Set the matrix rain ON/OFF'
     }
 }
 

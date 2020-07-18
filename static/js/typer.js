@@ -226,8 +226,18 @@ function createCommandField(){
                 $('#console').empty();
                 $('#commandInput').val('');
                 document.getElementById('commandDiv').hidden = false;
+                $(document).scrollTop(0);
                 $('#commandInput').focus();
                 breakline='';
+                return;
+            }
+            if(command=='matrix'){
+                matrix_function();
+                $('#commandInput').val('');
+                document.getElementById('commandDiv').hidden = false;
+                $('#commandInput').focus();
+                breakline='';
+                $(document).scrollTop($(document).height());
                 return;
             }
             if(command==''){
