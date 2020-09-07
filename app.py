@@ -458,7 +458,7 @@ def getcvCmd(user, args, ip='127.0.0.1'):
         r = requests.get('https://disposable.debounce.io/?email={0}'.format(email), verify=False)
         if r.status_code == 200:
             j = json.loads(r.text)
-            if j.get('disposable', False):
+            if j.get('disposable', False)=="true":
                 return '<span class="error">Temporary Email Not supported</span>'
         count = 0
         try:
