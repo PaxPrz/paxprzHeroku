@@ -9,7 +9,7 @@ var init_script = `
 // var init_script = 'hello';
 
 var LoginScript = `
-PaxPrz System tty <!--thisisjusttoextendsystemtimeandnothingelse-->
+PaxPrz System terminal <!--nextline-->
 Enter Username : `;
 
 // var writer = setInterval('write(init_script);', 10);
