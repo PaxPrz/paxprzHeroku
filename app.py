@@ -12,15 +12,13 @@ from email.utils import COMMASPACE, formatdate
 import re
 from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
 from sqlalchemy import create_engine
-import requests
-
 
 templates="templates"
 
-welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax
+welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
 Hello {0}, Welcome to my virtual system <span class="success">PraKsha</span> v1.0.
 
-This system was designed so you could know me well. It's like a portfolio. Let me introduce myself; I am Prakash Prajapati. I am a security researcher cum programmer.
+This system was designed so you could know me well. It's like a portfolio. Let me introduce myself; I am Prakash Prajapati. I am a python developer cum security researcher. 
 
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
@@ -76,10 +74,6 @@ PROJECTS={
         'quick':'Django Application with Hyperledger',
         'detail':'Doctors and patients informations are stored in blockchain network implemented using hyperledger composer. Only consulted (Allowed) doctors can view all reports of patients. Patient can set an appointment with doctor and doctor can set an appointment time; and consult with video conference implemented using WebRTC.'
     },
-    'DrCall':{
-        'quick':'Django Application with Postgresql',
-        'detail':'The concept of this application is same as DrSewa. But this time, the system was built from scratch using only Class-Based Views and Mixins. The database used was Postgresql. For video chat, Zoom API was implemented.'
-    },
     'Hastakshar':{
         'quick':'Academic Major Project',
         'detail':'Offline signature verification system using CNN (Keras &amp; Tensorflow). The trained weights metadata are then stored in blockchain network implemented using Hyperledger Composer. System was developed in Django with web interfaces. Only allowed users can verify signature of a signee while the signee gets notified of those actions. I tested with many CNN architecture, mostly created by myself. Training was done in Nvidia-1050Ti using Tensorflow-gui. Many steps of image pre-processing were carried out including grayscaling, noisereduction, resizing, etc using numpy and opencv library.'
@@ -103,7 +97,11 @@ PROJECTS={
     'ToHarrods':{
         'quick':'Flask App',
         'detail':'Application developed for client. Worked with big database set. Can\'t share much detail of the work'
-    }
+    },
+    'DrCall':{
+        'quick':'Django Application',
+        'detail':'The concept of this application is same as DrSewa. But this time, the system was built from scratch using only class based views and mixins. The database used was Postgresql. For video chat, I implemented zoom API.'
+    },
 }
 
 PROGRAMMING={
@@ -238,11 +236,18 @@ def whoispaxCmd(user, args):
     return output
 
 def workCmd(user, args):
-    output = '''Currently working as <span class="success">Security Analyst</span> @ Cynical Technology'''
+    output = '''Started working as <span class="success">Python Developer</span> @ codavatar
+    <br>
+    Previously worked at:
+    <br>
+    <span class="blue" style="padding-left:10%">Security Analyst</span> @ Cynical Technology
+    <br>
+    <span class="blue" style="padding-left:10%">Software Developer Intern</span> @ Leapfrog Technology
+    '''
     return output
 
 def projectsCmd(user, args):
-    global PROJECTS
+    global PROJECTS 
     output = ''
     if not args:
         output = '''<table class="noBorders">
@@ -455,11 +460,8 @@ def getcvCmd(user, args, ip='127.0.0.1'):
             name = ' '.join(args[1:]).strip(' ').strip('"').strip(' ')
         if name=='':
             name = 'Sir/Madam'
-        r = requests.get('https://disposable.debounce.io/?email={0}'.format(email), verify=False)
-        if r.status_code == 200:
-            j = json.loads(r.text)
-            if j.get('disposable', False)=="true":
-                return '<span class="error">Temporary Email Not supported</span>'
+        if 'yopmail' in email.lower():
+            return '<span class="error">Temporary Email Not supported</span>'
         count = 0
         try:
             CV_REQ_FROM_IP = CV.query.filter_by(ip=ip).all()
@@ -666,7 +668,7 @@ def certbotchallenge():
 #     with open('users.json','w') as f:
 #         json.dump(USERS, f, indent=4)
 #     return "<h1>Save Complete</h1>"
-
+      
 #Database create all tables
 
 engine = create_engine(os.environ.get('DATABASE_URL'))
