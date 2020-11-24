@@ -13,6 +13,8 @@ import re
 from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
 from sqlalchemy import create_engine
 
+SMTP_SERVER = 'smtp.sendgrid.net:465' #'smtp.gmail.com:587'
+
 templates="templates"
 
 welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
@@ -113,14 +115,19 @@ PROGRAMMING={
     'PHP':'&#9733;&nbsp;&#9734;&nbsp;&#9734;&nbsp;&#9734;&nbsp;&#9734;&nbsp;'
 }
 
+gmail_user = os.environ['GMAIL_USER']
 gmail_email = os.environ['GMAIL_EMAIL']
 gmail_pass = os.environ['GMAIL_PASS']
 cv_filename = 'paxcv.pdf'
 
 def sendCVEmail(name, email):
     global gmail_email, gmail_pass, cv_filename
-    text = '''Hello {0}. I have attached my CV hereby. If you consider me good for any position please contact me or email me.
-    Sent by AutoBot. From Website: http://paxprz.herokuapp.com'''
+    text = '''Hello {0}. 
+    
+    I have attached my CV hereby. If you consider me good for any position contact or email me.
+
+        Sent by PaxBot. From Website: https://paxprz.herokuapp.com
+    '''
     msg = MIMEMultipart()
     msg['From'] = gmail_email
     msg['To'] = email
@@ -136,10 +143,11 @@ def sendCVEmail(name, email):
         writeError(e)
         return '<span class="error">CV file not found. Try later</span>'
     try:
-        smtp = smtplib.SMTP('smtp.gmail.com:587')
+        # smtp = smtplib.SMTP(SMTP_SERVER)
+        smtp = smtplib.SMTP_SSL(SMTP_SERVER)
         smtp.ehlo()
-        smtp.starttls()
-        smtp.login(gmail_email, gmail_pass)
+        # smtp.starttls()
+        smtp.login(gmail_user, gmail_pass)
         smtp.sendmail(gmail_email, email, msg.as_string())
         smtp.quit()
     except Exception as e:
