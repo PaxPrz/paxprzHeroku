@@ -1,2 +1,6 @@
 env_var.sh
+*.pdf
+*.log
+*challenge.txt
+__pycache__/
 
