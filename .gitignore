@@ -3,3 +3,5 @@ prod_env_var.sh
 
 __pycache__/*
 
+*.pdf
+
