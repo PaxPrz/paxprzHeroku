@@ -125,6 +125,7 @@ PROGRAMMING={
 gmail_user = os.environ['GMAIL_USER']
 gmail_email = os.environ['GMAIL_EMAIL']
 gmail_pass = os.environ['GMAIL_PASS']
+mail_user = os.environ.get("MAIL_USER") or gmail_user
 cv_filename = 'paxcv.pdf'
 
 def sendCVEmail(name, email):
@@ -136,7 +137,7 @@ def sendCVEmail(name, email):
         Sent by PaxBot. From Website: https://paxprz.herokuapp.com
     '''
     msg = MIMEMultipart()
-    msg['From'] = gmail_email
+    msg['From'] = mail_user
     msg['To'] = email
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = "PaxPrz CV"
@@ -155,7 +156,7 @@ def sendCVEmail(name, email):
         smtp.ehlo()
         # smtp.starttls()
         smtp.login(gmail_user, gmail_pass)
-        smtp.sendmail(gmail_email, email, msg.as_string())
+        smtp.sendmail(mail_user, email, msg.as_string())
         smtp.quit()
     except Exception as e:
         writeError(e)
