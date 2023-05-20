@@ -606,7 +606,7 @@ def writeError(data):
 @app.route('/')
 def home():
     if HOST_VALIDATION:
-        host = request.header.get("host", "")
+        host = request.headers.get("host", "")
         if HOST_VALIDATION not in host:
             return ""
     return render_template("index.html")
