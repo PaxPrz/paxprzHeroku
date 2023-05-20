@@ -1,1 +1,5 @@
 env_var.sh
+prod_env_var.sh
+
+__pycache__/*
+

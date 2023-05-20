@@ -10,17 +10,19 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 import re
+
 from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
 from sqlalchemy import create_engine
 
-SMTP_SERVER = 'smtp.sendgrid.net:465' #'smtp.gmail.com:587'
+# SMTP_SERVER = 'smtp.sendgrid.net:465' #'smtp.gmail.com:587'
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com:587")
 
 templates="templates"
 
 welcomeMsg = '''<span class="red">{0}@PaxPrz:</span>:<span class="blue">~</span>$ whoispax 
-Hello {0}, Welcome to my virtual system <span class="success">PraKsha</span> v1.0.
+Hello, Jwojolapa 🙏, {0}, Welcome to my virtual system <span class="success">PraKsha</span> v2.0.
 
-This system was designed so you could know me well. It's like a portfolio. Let me introduce myself; I am Prakash Prajapati. I am a python developer cum security researcher. 
+This system was designed so you could know me well. It's like a portfolio. Let me introduce myself; I am Prakash Prajapati. I am a Python Developer, Devops and Security Enthusiast. 
 
 Navigate the system with commands you can play. Start with 'help' command. I hope you have good time learning about me.
 '''
@@ -143,8 +145,8 @@ def sendCVEmail(name, email):
         writeError(e)
         return '<span class="error">CV file not found. Try later</span>'
     try:
-        # smtp = smtplib.SMTP(SMTP_SERVER)
-        smtp = smtplib.SMTP_SSL(SMTP_SERVER)
+        smtp = smtplib.SMTP(SMTP_SERVER)
+        # smtp = smtplib.SMTP_SSL(SMTP_SERVER)
         smtp.ehlo()
         # smtp.starttls()
         smtp.login(gmail_user, gmail_pass)
@@ -244,9 +246,13 @@ def whoispaxCmd(user, args):
     return output
 
 def workCmd(user, args):
-    output = '''Started working as <span class="success">Python Developer</span> @ codavatar
+    output = '''Started working as <span class="success">Senior Python Developer</span> @ Tekkon Technologies.
     <br>
-    Previously worked at:
+    Previously worked as:
+    <br>
+    <span class="blue" style="padding-left:10%">Backend and DevOps Engineer</span> @ Varicon Pvt Ltd.
+    <br>
+    <span class="blue" style="padding-left:10%">Python Developer</span> @ Codavatar Tech.
     <br>
     <span class="blue" style="padding-left:10%">Security Analyst</span> @ Cynical Technology
     <br>

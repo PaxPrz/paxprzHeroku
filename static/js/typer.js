@@ -201,9 +201,22 @@ function InputSanitizor(data){
 }
 
 var breakline='';
+var command_history = [];
+var cue_position = 0;
 
 function createCommandField(){
     $( '<div id="commandDiv"><span class="red">'+username+'@PaxPrz:</span>:<span class="blue">~</span>$ <input type="text" class="console-input" id="commandInput" autocomplete="off" /></div>' ).insertAfter('#console');
+    $('#commandInput').keyup(function(e){
+        if(e.code=="ArrowUp") {
+            if(cue_position >= command_history.length) return;
+            cue_position += 1;
+            $('#commandInput').val(command_history[command_history.length-cue_position]);
+        } else if (e.code=="ArrowDown") {
+            if(cue_position <= 0) return;
+            cue_position -= 1;
+            $('#commandInput').val(command_history[command_history.length-cue_position]);
+        }
+    });
     $('#commandInput').keypress(function (e) {
         if (e.which == 13) {
             command = InputSanitizor($('#commandInput').val());
@@ -222,6 +235,7 @@ function createCommandField(){
             document.getElementById('commandDiv').hidden = true;
             breakline='<br>';
             command = $.trim(command)
+            command_history.push(command);
             if(command=='clear'){
                 $('#console').empty();
                 $('#commandInput').val('');
