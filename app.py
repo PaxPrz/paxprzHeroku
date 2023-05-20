@@ -13,6 +13,11 @@ import re
 
 from model import db, Login, GitHub, StackOverFlow, LinkedIn, CV
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+load_dotenv()
+
+HOST_VALIDATION = os.environ.get("HOST_VALIDATION")
 
 # SMTP_SERVER = 'smtp.sendgrid.net:465' #'smtp.gmail.com:587'
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com:587")
@@ -599,6 +604,10 @@ def writeError(data):
 
 @app.route('/')
 def home():
+    if HOST_VALIDATION:
+        host = request.header.get("host", "")
+        if HOST_VALIDATION not in host:
+            return ""
     return render_template("index.html")
 
 @app.route('/user', methods=['POST'])
